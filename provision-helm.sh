@@ -42,10 +42,18 @@ EOF
 
 # initialize helm.
 echo "initializing helm tiller..."
+# workaround for installing tiller in k8s 1.16.
+# see https://github.com/helm/helm/issues/6374#issuecomment-533186177
 helm init \
-    --service-account tiller \
-    --history-max 200 \
-    --wait
+  --service-account tiller \
+  --history-max 200 \
+  --output yaml \
+  | sed 's@apiVersion: extensions/v1beta1@apiVersion: apps/v1@' \
+  | sed 's@  replicas: 1@  replicas: 1\n  selector: {"matchLabels": {"app": "helm", "name": "tiller"}}@' \
+  | kubectl apply -f -
+kubectl wait --for=condition=available --timeout=1h deployment/tiller-deploy -n kube-system
+helm init --client-only
+helm repo update
 fi
 
 # kick the tires.

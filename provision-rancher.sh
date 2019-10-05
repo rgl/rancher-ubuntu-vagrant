@@ -30,28 +30,6 @@ kubectl ingress-nginx lint --show-all --all-namespaces
 kubectl ingress-nginx ingresses --all-namespaces
 EOF
 
-echo "creating the ingress-nginx loadbalancer service..."
-kubectl apply --namespace ingress-nginx -f - <<EOF
-apiVersion: v1
-kind: Service
-metadata:
-  name: ingress-nginx
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: $rancher_server_domain
-    external-dns.alpha.kubernetes.io/ttl: "120"
-spec:
-  type: LoadBalancer
-  ports:
-    - name: http
-      port: 80
-      targetPort: http
-    - name: https
-      port: 443
-      targetPort: https
-  selector:
-    app: ingress-nginx
-EOF
-
 # launch rancher.
 # see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/
 # see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/chart-options/

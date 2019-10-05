@@ -5,9 +5,10 @@ config_domain = 'rancher.test'
 config_pandora_fqdn = "pandora.#{config_domain}"
 config_pandora_ip_address = '10.1.0.2'
 config_server_fqdn = "server.#{config_domain}"
+config_server_ip_address = '10.1.0.3'
 config_rancher_helm_chart_version = '2.3.0-rc11'
 config_rancher_cli_version = 'v2.3.0' # see https://github.com/rancher/cli/releases
-config_ip_addresses = ['10.1.0.3', '10.1.0.4', '10.1.0.5']
+config_ip_addresses = ['10.1.0.5', '10.1.0.6', '10.1.0.7']
 config_admin_password = 'admin'
 config_docker_version = '5:19.03.2~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
 config_rke_version = 'v0.3.0' # see https://github.com/rancher/rke/releases
@@ -22,6 +23,7 @@ config_nfs_client_provisioner_version = '1.2.6' # version of https://github.com/
 hosts = """
 127.0.0.1	localhost
 #{config_pandora_ip_address} #{config_pandora_fqdn}
+#{config_server_ip_address} #{config_server_fqdn}
 #{config_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} rke#{i+1}.#{config_domain}"}.join("\n")}
 
 # The following lines are desirable for IPv6 capable hosts
@@ -57,6 +59,7 @@ Vagrant.configure(2) do |config|
     end
     config.vm.hostname = config_pandora_fqdn
     config.vm.network :private_network, ip: config_pandora_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
+    config.vm.network :private_network, ip: config_server_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
     config.vm.provision 'shell', inline: 'echo "$1" >/etc/hosts', args: [hosts]
     config.vm.provision 'shell', path: 'provision-base.sh'
     config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_pandora_fqdn]
@@ -64,6 +67,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision 'shell', path: 'provision-nfs-server.sh', args: [config_pandora_ip_address, "#{config_pandora_ip_address}/24"]
     config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version]
     config.vm.provision 'shell', path: 'provision-registry.sh', args: [config_pandora_fqdn]
+    config.vm.provision 'shell', path: 'provision-haproxy.sh', args: [config_server_fqdn, config_server_ip_address, config_ip_addresses.join(',')]
   end
 
   config_ip_addresses.each_with_index do |config_rke_ip_address, i|

@@ -3,7 +3,8 @@ set -eu
 set -x # TODO remove this after test.
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
-rke_index="${1:-1}"; shift || true
+rke_roles="${1:-controlplane,etcd,worker}"; shift || true
+rke_index="${1:-0}"; shift || true
 rke_fqdn="${1:-rke1.rancher.test}"; shift || true
 rke_ip_address="${1:-10.1.0.3}"; shift || true
 admin_password="${1:-admin}"; shift || true
@@ -74,7 +75,7 @@ rke config --list-version --all                   # list supported k8s versions.
 rke config --system-images --version $k8s_version # list the system images.
 
 # create the rke configuration.
-if [ "$rke_index" == '0' ]; then
+if [[ "$rke_roles" == *'controlplane'* ]] && [[ "$rke_index" == '0' ]]; then
 # NB always leave the "nodes:" line at the end of cluster.yaml because we will append nodes to it later.
 # see https://rancher.com/docs/rke/latest/en/example-yamls/
 # see https://rancher.com/docs/rke/latest/en/config-options/add-ons/network-plugins/#network-plug-in-options
@@ -138,9 +139,11 @@ cat >>cluster.yaml <<EOF
     internal_address: $rke_ip_address
     user: vagrant
     role:
-      - controlplane
-      - etcd
-      - worker
+$(
+      for rke_role in `echo "$rke_roles" | tr , ' '`; do
+        echo "      - $rke_role"
+      done
+)
 EOF
 
 # bring up the cluster.

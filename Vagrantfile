@@ -10,8 +10,10 @@ config_rancher_helm_chart_version = '2.3.0-rc11'
 config_rancher_cli_version = 'v2.3.0' # see https://github.com/rancher/cli/releases
 config_ip_addresses = ['10.1.0.5', '10.1.0.6', '10.1.0.7']
 config_ubuntu_worker_ip_addresses = ['10.1.0.30']
+config_windows_worker_ip_addresses = ['10.1.0.40']
 config_admin_password = 'admin'
 config_docker_version = '5:19.03.2~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+config_docker_version_windows = '19.03.2' # see https://github.com/rgl/docker-ce-windows-binaries-vagrant/releases
 config_rke_version = 'v0.3.0' # see https://github.com/rancher/rke/releases
 config_k8s_version = 'v1.16.1-rancher1-1' # see https://github.com/rancher/kontainer-driver-metadata/blob/master/rke/k8s_rke_system_images.go of the version that ships with your rke version.
 config_kubectl_version = '1.16.1-00' # NB execute apt-cache madison kubectl to known the available versions.
@@ -27,6 +29,7 @@ hosts = """
 #{config_server_ip_address} #{config_server_fqdn}
 #{config_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} rke#{i+1}.#{config_domain}"}.join("\n")}
 #{config_ubuntu_worker_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} rkeu#{i+1}.#{config_domain}"}.join("\n")}
+#{config_windows_worker_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} rkew#{i+1}.#{config_domain}"}.join("\n")}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
@@ -142,6 +145,36 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-helm.sh', args: [i, config_helm_version]
       config.vm.provision 'shell', path: 'summary.sh', args: [
         config_pandora_fqdn,
+      ]
+    end
+  end
+
+  config_windows_worker_ip_addresses.each_with_index do |config_rke_ip_address, i|
+    name = "rkew#{i+1}"
+    config_rke_fqdn = "#{name}.rancher.test"
+    config.vm.define name do |config|
+      config.vm.provider :libvirt do |lv, config|
+        config.vm.synced_folder '.', '/vagrant', type: 'smb', smb_username: ENV['USER'], smb_password: ENV['VAGRANT_SMB_PASSWORD']
+      end
+      config.vm.box = 'windows-2019-amd64'
+      config.vm.hostname = config_rke_fqdn.split('.').first
+      config.vm.network :private_network, ip: config_rke_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
+      config.vm.provision 'shell', path: 'ps.ps1', args: 'provision-containers-feature.ps1', reboot: true
+      config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-dns-client.ps1', config_pandora_ip_address]
+      config.vm.provision 'shell', inline: "$env:chocolateyVersion='0.10.15'; iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex", name: "Install Chocolatey"
+      config.vm.provision 'shell', path: 'ps.ps1', args: 'provision-base.ps1'
+      config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-docker-ce.ps1', config_docker_version_windows]
+      config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-rke.ps1',
+        config_pandora_fqdn,
+        'worker',
+        i,
+        config_rke_fqdn,
+        config_rke_ip_address,
+        config_admin_password,
+        config_rke_version,
+        config_k8s_version,
+        config_kubectl_version,
+        config_krew_version,
       ]
     end
   end

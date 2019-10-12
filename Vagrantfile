@@ -78,7 +78,8 @@ Vagrant.configure(2) do |config|
     config.vm.network :private_network, ip: config_pandora_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
     config.vm.network :private_network, ip: config_server_ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
     config.vm.provision 'shell', inline: 'echo "$1" >/etc/hosts', args: [hosts]
-    config.vm.provision 'shell', path: 'provision-base.sh'
+    config.vm.provision 'shell', path: 'provision-apt-cacher.sh'
+    config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-dns-server.sh', args: [config_pandora_ip_address, config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-nfs-server.sh', args: [config_pandora_ip_address, "#{config_pandora_ip_address}/24"]

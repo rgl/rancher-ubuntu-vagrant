@@ -28,6 +28,8 @@ The rancher load balancer statistics are at http://server.rancher.test:9000.
 
 The docker registry is at https://pandora.rancher.test:5000.
 
+The apt-cacher is at http://pandora.rancher.test:3142/acng-report.html (click the "Count Data" button to see the cache statistics).
+
 You can access the example cluster from the host with, e.g.:
 
 ```bash

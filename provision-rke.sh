@@ -1,28 +1,25 @@
 #!/bin/bash
 set -eu
-set -x # TODO remove this after test.
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rke_roles="${1:-controlplane,etcd,worker}"; shift || true
 rke_index="${1:-0}"; shift || true
-rke_fqdn="${1:-rke1.rancher.test}"; shift || true
-rke_ip_address="${1:-10.1.0.3}"; shift || true
-admin_password="${1:-admin}"; shift || true
+node_ip_address="${1:-10.1.0.3}"; shift || true
 rke_version="${1:-v0.3.0}"; shift || true
 k8s_version="${1:-v1.16.1-rancher1-1}"; shift || true
 kubectl_version="${1:-1.16.1-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.3.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
 pod_network_cidr='10.52.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.53.0.0/16'   # default is 10.43.0.0/16.
+service_node_port_range='30000-32767' # default is 30000-32767
 dns_service_ip_address='10.53.0.10'   # default is 10.43.0.10.
-cluster_domain='cluster.domain'       # default is cluster.local.
+cluster_domain='local.domain'         # default is cluster.local.
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
-node_ip_address="$rke_ip_address"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
 registry_username='vagrant'
 registry_password='vagrant'
-cluster_name='example'
+cluster_name='local'
 
 # wrap commands in a way that their output is correctly (most of the time) displayed on the vagrant up output.
 # see https://github.com/hashicorp/vagrant/issues/11047
@@ -86,6 +83,7 @@ ssh_key_path: /vagrant/shared/ssh/rke_rsa
 services:
   kube-api:
     service_cluster_ip_range: $service_network_cidr
+    service_node_port_range: $service_node_port_range
   kube-controller:
     cluster_cidr: $pod_network_cidr
     service_cluster_ip_range: $service_network_cidr
@@ -109,13 +107,13 @@ fi
 #    kubelet node-ip iif address is different than internal_address, as such,
 #    in address we've used a DNS name and in internal_address an IP address.
 #    this ends up with an node annotation name rke.cattle.io/external-ip which is not really an IP, e.g.:
-#       kubectl describe nodes rke1
-#       Name:               rke1
+#       kubectl describe nodes server1
+#       Name:               server1
 #       Roles:              controlplane,etcd,worker
 #       Labels:             beta.kubernetes.io/arch=amd64
 #                           beta.kubernetes.io/os=linux
 #                           kubernetes.io/arch=amd64
-#                           kubernetes.io/hostname=rke1
+#                           kubernetes.io/hostname=server1
 #                           kubernetes.io/os=linux
 #                           node-role.kubernetes.io/controlplane=true
 #                           node-role.kubernetes.io/etcd=true
@@ -125,18 +123,18 @@ fi
 #                           flannel.alpha.coreos.com/kube-subnet-manager: true
 #                           flannel.alpha.coreos.com/public-ip: 10.1.0.3
 #                           node.alpha.kubernetes.io/ttl: 0
-#                           rke.cattle.io/external-ip: rke1.rancher.test
+#                           rke.cattle.io/external-ip: server1.rancher.test
 #                           rke.cattle.io/internal-ip: 10.1.0.3
 #                           volumes.kubernetes.io/controller-managed-attach-detach: true
-# NB kubectl get node $(hostname) -o wide must return $rke_ip_address as INTERNAL-IP.
+# NB kubectl get node $(hostname) -o wide must return $node_ip_address as INTERNAL-IP.
 #    in the end kubectl get nodes -o wide must report something like:
 #       NAME   STATUS   ROLES                      AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
-#       rke1   Ready    controlplane,etcd,worker   19m   v1.15.4   10.1.0.3      <none>        Ubuntu 18.04.3 LTS   4.15.0-62-generic   docker://19.3.2
+#       server1   Ready    controlplane,etcd,worker   19m   v1.15.4   10.1.0.3      <none>        Ubuntu 18.04.3 LTS   4.15.0-62-generic   docker://19.3.2
 #    also do a ps -wwxo pid,cmd | grep kubelet and ensure the value of the --node-ip argument is correct.
 cat >>cluster.yaml <<EOF
   - hostname_override: $(hostname)
     address: $(hostname --fqdn)
-    internal_address: $rke_ip_address
+    internal_address: $node_ip_address
     user: vagrant
     role:
 $(
@@ -170,9 +168,9 @@ apt-get install -y "kubectl=$kubectl_version"
 kubectl completion bash >/etc/bash_completion.d/kubectl
 
 # wait for this node to be Ready.
-# e.g. rke1   Ready    controlplane,etcd,worker   22m   v1.15.4
+# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.15.4
 echo "waiting for this node to be ready..."
-$SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
+$SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
 
 # install the krew kubectl package manager.
 echo "installing the krew $krew_version kubectl package manager..."

@@ -102,7 +102,8 @@ admin_api_token="$(
         "$rancher_server_url/v3/token" \
     | jq -r .token)"
 echo -n "$admin_api_token" >~/.rancher-admin-api-token
-chmod 400 ~/.rancher-admin-api-token
+chmod 600 ~/.rancher-admin-api-token
+echo -n "$admin_api_token" >/vagrant/shared/cluster-admin-api-token
 
 # set the server-url.
 echo "setting the rancher server-url setting..."

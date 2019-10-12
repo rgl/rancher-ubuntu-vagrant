@@ -17,9 +17,9 @@ Configure your host DNS resolver to delegate the `rancher.test` domain to the `p
 ```plain
 10.1.0.2 pandora.rancher.test
 10.1.0.3 server.rancher.test
-10.1.0.5 rke1.rancher.test
-10.1.0.6 rke2.rancher.test
-10.1.0.7 rke3.rancher.test
+10.1.0.5 server1.rancher.test
+10.1.0.6 server2.rancher.test
+10.1.0.7 server3.rancher.test
 ```
 
 Access the rancher server at https://server.rancher.test and login with the default `admin` username and password.

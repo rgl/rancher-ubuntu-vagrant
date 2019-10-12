@@ -65,7 +65,7 @@ EOF
   for ip_address in `echo "$ip_addresses" | tr , ' '`; do
     ((i=i+1))
     echo "  # verify the health check with: (printf \"GET /healthz HTTP/1.0\r\nHost:$server_fqdn\r\n\r\n\"; sleep 2) | openssl s_client -connect $ip_address:443 -servername $server_fqdn -CAfile /etc/ssl/certs/ca-certificates.crt"
-    echo "  server rke$i $ip_address:443 check port 443 check-ssl check-sni $server_fqdn ca-file /etc/ssl/certs/ca-certificates.crt"
+    echo "  server server$i $ip_address:443 check port 443 check-ssl check-sni $server_fqdn ca-file /etc/ssl/certs/ca-certificates.crt"
   done
 )>>/etc/haproxy/haproxy.cfg
 

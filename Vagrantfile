@@ -84,6 +84,7 @@ Vagrant.configure(2) do |config|
     config.vm.provision 'shell', path: 'provision-dns-server.sh', args: [config_pandora_ip_address, config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-nfs-server.sh', args: [config_pandora_ip_address, "#{config_pandora_ip_address}/24"]
     config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version]
+    config.vm.provision 'shell', path: 'provision-registry-proxy.sh', args: [config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-registry.sh', args: [config_pandora_fqdn]
     config.vm.provision 'shell', path: 'provision-haproxy.sh', args: [config_server_fqdn, config_server_ip_address, config_server_ip_addresses.join(',')]
   end
@@ -97,7 +98,7 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
       config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
-      config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version]
+      config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version, config_pandora_fqdn]
       config.vm.provision 'shell', path: 'provision-rke.sh', args: [
         config_pandora_fqdn,
         'controlplane,etcd,worker',
@@ -145,7 +146,7 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
       config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
-      config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version]
+      config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version, config_pandora_fqdn]
       config.vm.provision 'shell', path: 'provision-master.sh', args: [
         config_pandora_fqdn,
         config_server_fqdn,
@@ -172,7 +173,7 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
       config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
-      config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version]
+      config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version, config_pandora_fqdn]
       config.vm.provision 'shell', path: 'provision-ubuntu-worker.sh', args: [
         config_pandora_fqdn,
         ip_address,

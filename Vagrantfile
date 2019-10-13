@@ -11,9 +11,11 @@ def generate_ip_addresses(base_ip_address, count)
   end
 end
 
+config_windows_prefered_cluster = true
 config_server_count = 1
 config_master_count = 1
-config_ubuntu_worker_count = 1
+config_ubuntu_worker_count = 0
+config_windows_worker_count = 1
 config_domain = 'rancher.test'
 config_pandora_fqdn = "pandora.#{config_domain}"
 config_pandora_ip_address = '10.1.0.2'
@@ -24,11 +26,14 @@ config_rancher_cli_version = 'v2.3.0' # see https://github.com/rancher/cli/relea
 config_server_ip_addresses = generate_ip_addresses('10.1.0.5', config_server_count)
 config_master_ip_addresses = generate_ip_addresses('10.1.0.10', config_master_count)
 config_ubuntu_worker_ip_addresses = generate_ip_addresses('10.1.0.15', config_ubuntu_worker_count)
+config_windows_worker_ip_addresses = generate_ip_addresses('10.1.0.20', config_windows_worker_count)
 config_admin_password = 'admin'
 config_docker_version = '5:19.03.3~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+config_docker_version_windows = '19.03.3' # see https://github.com/rgl/docker-ce-windows-binaries-vagrant/releases
 config_rke_version = 'v0.3.0' # see https://github.com/rancher/rke/releases
 config_k8s_version = 'v1.16.1-rancher1-1' # see https://github.com/rancher/kontainer-driver-metadata/blob/master/rke/k8s_rke_system_images.go of the version that ships with your rke version.
 config_kubectl_version = '1.16.1-00' # NB execute apt-cache madison kubectl to known the available versions.
+config_kubectl_version_windows = '1.16.1' # NB see https://chocolatey.org/packages/kubernetes-cli
 config_krew_version = 'v0.3.1' # NB see https://github.com/kubernetes-sigs/krew
 config_helm_version = 'v2.14.3' # see https://github.com/helm/helm/releases/latest
 config_metallb_helm_chart_version = '0.11.2' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
@@ -42,6 +47,7 @@ hosts = """
 #{config_server_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} server#{i+1}.#{config_domain}"}.join("\n")}
 #{config_master_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} master#{i+1}.#{config_domain}"}.join("\n")}
 #{config_ubuntu_worker_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} uworker#{i+1}.#{config_domain}"}.join("\n")}
+#{config_windows_worker_ip_addresses.map.with_index{|ip_address, i|"#{ip_address} wworker#{i+1}.#{config_domain}"}.join("\n")}
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
@@ -129,6 +135,7 @@ Vagrant.configure(2) do |config|
           config_pandora_fqdn,
           config_server_fqdn,
           config_k8s_version,
+          config_windows_prefered_cluster && 'true' || 'false',
         ]
       end
       config.vm.provision 'shell', path: 'summary.sh', args: [
@@ -141,6 +148,12 @@ Vagrant.configure(2) do |config|
     name = "master#{i+1}"
     fqdn = "#{name}.rancher.test"
     config.vm.define name do |config|
+      config.vm.provider 'libvirt' do |lv, config|
+        lv.memory = 1*1024
+      end
+      config.vm.provider 'virtualbox' do |vb|
+        vb.memory = 1*1024
+      end
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
       config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
@@ -179,6 +192,39 @@ Vagrant.configure(2) do |config|
         ip_address,
         config_kubectl_version,
       ]
+    end
+  end
+
+  if config_windows_prefered_cluster
+    config_windows_worker_ip_addresses.each_with_index do |ip_address, i|
+      name = "wworker#{i+1}"
+      fqdn = "#{name}.rancher.test"
+      config.vm.define name do |config|
+        config.vm.provider 'libvirt' do |lv, config|
+          lv.memory = 5*1024
+          config.vm.synced_folder '.', '/vagrant', type: 'smb', smb_username: ENV['USER'], smb_password: ENV['VAGRANT_SMB_PASSWORD']
+        end
+        config.vm.provider 'virtualbox' do |vb|
+          vb.memory = 5*1024
+        end
+        config.vm.box = 'windows-2019-amd64'
+        config.vm.hostname = fqdn.split('.').first
+        config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
+        config.vm.provision 'shell', path: 'ps.ps1', args: 'provision-certificates.ps1'
+        config.vm.provision 'shell', path: 'ps.ps1', args: 'provision-containers-feature.ps1', reboot: true
+        config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-dns-client.ps1', config_pandora_ip_address]
+        config.vm.provision 'shell', inline: "$env:chocolateyVersion='0.10.15'; iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex", name: "Install Chocolatey"
+        config.vm.provision 'shell', path: 'ps.ps1', args: 'provision-base.ps1'
+        # NB as of rancher 2.3.0 requires Docker EE.
+        #    see https://github.com/rancher/rancher/issues/23418
+        #config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-docker-ce.ps1', config_docker_version_windows]
+        config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-docker-ee.ps1', config_docker_version_windows]
+        config.vm.provision 'shell', path: 'ps.ps1', args: ['provision-windows-worker.ps1',
+          config_pandora_fqdn,
+          ip_address,
+          config_kubectl_version_windows,
+        ]
+      end
     end
   end
 end

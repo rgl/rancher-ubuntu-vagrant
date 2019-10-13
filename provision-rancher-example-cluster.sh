@@ -5,6 +5,7 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 k8s_version="${1:-v1.16.1-rancher1-1}"; shift || true
+windows_prefered_cluster="${1:-false}"; shift || true
 pod_network_cidr='10.62.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.63.0.0/16'   # default is 10.43.0.0/16.
 service_node_port_range='30000-32767' # default is 30000-32767
@@ -43,7 +44,7 @@ cluster_response="$(wget -qO- \
         "description": "hello world",
         "dockerRootDir": "/var/lib/docker",
         "enableNetworkPolicy": false,
-        "windowsPreferedCluster": false,
+        "windowsPreferedCluster": '$windows_prefered_cluster',
         "rancherKubernetesEngineConfig": {
             "type": "rancherKubernetesEngineConfig",
             "kubernetesVersion": "'$k8s_version'",
@@ -125,3 +126,5 @@ cluster_registration_response="$(
         "$rancher_server_url/v3/clusterregistrationtoken")"
 rancher_node_command="$(echo "$cluster_registration_response" | jq -r .nodeCommand)"
 echo "$rancher_node_command" >/vagrant/shared/rancher-ubuntu-registration-node-command.sh
+rancher_windows_node_command="$(echo "$cluster_registration_response" | jq -r .windowsNodeCommand)"
+echo "$rancher_windows_node_command" >/vagrant/shared/rancher-windows-registration-node-command.cmd

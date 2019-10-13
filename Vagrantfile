@@ -177,7 +177,6 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-ubuntu-worker.sh', args: [
         config_pandora_fqdn,
         ip_address,
-        config_k8s_version,
         config_kubectl_version,
       ]
     end

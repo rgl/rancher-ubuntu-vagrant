@@ -1,7 +1,7 @@
 param(
     [string]$pandoraFqdn = 'pandora.rancher.test',
     [string]$nodeIpAddress = '10.1.0.20',
-    [string]$kubectlVersion = '1.16.1'
+    [string]$kubectlVersion = '1.16.2'
 )
 
 $registryHost = "${pandoraFqdn}:5000"
@@ -27,7 +27,7 @@ Write-Host "registering this node as a rancher-agent with $rancherAgentRegistrat
 cmd.exe /c $rancherAgentRegistrationCommand
 
 # wait for this node to be Ready.
-# e.g. uworker1   Ready    worker   2m9s   v1.16.1
+# e.g. uworker1   Ready    worker   2m9s   v1.16.2
 $nodeName = $env:COMPUTERNAME.ToLower()
 Write-Host "waiting for node $nodeName to be ready..."
 while ($true) {

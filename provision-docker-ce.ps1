@@ -1,10 +1,10 @@
 param(
-    [string]$archiveVersion = '19.03.3'
+    [string]$archiveVersion = '19.03.4'
 )
 
 # see https://docs.microsoft.com/en-us/virtualization/windowscontainers/manage-docker/configure-docker-daemon
 # see https://docs.docker.com/engine/installation/linux/docker-ce/binaries/#install-server-and-client-binaries-on-windows
-# see https://github.com/docker/docker-ce/releases/tag/v19.03.3
+# see https://github.com/docker/docker-ce/releases/tag/v19.03.4
 
 # download install the docker binaries.
 $archiveName = "docker-$archiveVersion.zip"

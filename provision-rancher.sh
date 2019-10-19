@@ -5,9 +5,9 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 admin_password="${1:-admin}"; shift || true
-rancher_helm_chart_version="${1:-2.3.0}"; shift || true
+rancher_helm_chart_version="${1:-2.3.1}"; shift || true
 rancher_cli_version="${1:-v2.3.0}"; shift || true
-k8s_version="${1:-v1.16.1-rancher1-1}"; shift || true
+k8s_version="${1:-v1.16.2-rancher1-1}"; shift || true
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -37,7 +37,7 @@ EOF
 # see https://releases.rancher.com/server-charts/latest/index.yaml
 echo "installing rancher..."
 helm repo add rancher https://releases.rancher.com/server-charts/latest
-helm search rancher/ --versions
+helm search rancher/ --versions | head -10
 helm install \
     rancher/rancher \
     --namespace cattle-system \

@@ -7,7 +7,7 @@ set -eu
 # see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-init/
 
 rke_index="${1:-1}"; shift || true
-helm_version="${1:-v2.14.3}"; shift || true
+helm_version="${1:-v2.15.2}"; shift || true
 
 # install helm.
 echo "installing helm $helm_version client..."

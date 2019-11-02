@@ -31,7 +31,7 @@ cmd.exe /c $rancherAgentRegistrationCommand
 $nodeName = $env:COMPUTERNAME.ToLower()
 Write-Host "waiting for node $nodeName to be ready..."
 while ($true) {
-    $status = kubectl get nodes $nodeName 2>$null | Where-Object {$_ -match "$node_name\s+Ready\s+"}
+    $status = cmd.exe /c "kubectl get nodes $nodeName 2>NUL" | Where-Object {$_ -match "$nodeName\s+Ready\s+"}
     if ($status) {
         break
     }

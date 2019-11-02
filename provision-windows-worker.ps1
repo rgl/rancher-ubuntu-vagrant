@@ -41,7 +41,8 @@ Write-Host 'node ready!'
 
 # login into the registry.
 Write-Host "logging in the registry..."
-$registryPassword | docker login $registryHost --username "$registryUsername" --password-stdin
+# NB --password-stdin does not work when executed from vagrant.
+docker login $registryHost --username $registryUsername --password $registryPassword
 
 # show summary.
 Write-Title 'Windows version from host'

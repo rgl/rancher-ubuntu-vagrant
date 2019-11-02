@@ -31,7 +31,7 @@ config_k8s_version = 'v1.16.2-rancher1-1' # see https://github.com/rancher/konta
 config_kubectl_version = '1.16.2-00' # NB execute apt-cache madison kubectl to known the available versions.
 config_krew_version = 'v0.3.1' # NB see https://github.com/kubernetes-sigs/krew
 config_helm_version = 'v2.15.2' # see https://github.com/helm/helm/releases/latest
-config_metallb_helm_chart_version = '0.11.2' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
+config_metallb_helm_chart_version = '0.12.0' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
 config_metallb_ip_addresses = '10.1.0.30-10.1.0.40' # MetalLB will allocate IP addresses from this range.
 config_nfs_client_provisioner_version = '1.2.6' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
 

@@ -163,6 +163,7 @@ Vagrant.configure(2) do |config|
       config.vm.provision 'shell', path: 'provision-helm.sh', args: [config_helm_version]
       if i == 0
         config.vm.provision 'shell', path: 'provision-metallb.sh', args: [config_metallb_helm_chart_version, config_metallb_master_ip_addresses]
+        config.vm.provision 'shell', path: 'provision-external-dns-pdns.sh', args: [config_pandora_fqdn, config_server_fqdn]
         config.vm.provision 'shell', path: 'provision-rancher-cli.sh', args: [
           config_server_fqdn,
           config_rancher_cli_version,

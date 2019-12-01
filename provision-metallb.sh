@@ -20,11 +20,12 @@ metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
 # see https://github.com/helm/charts/commits/master/stable/metallb
 # see https://github.com/helm/charts/tree/b0f9cb2d7af822e0031f632f2faa0cbb53167770/stable/metallb
 echo "deploying the metallb app..."
+kubectl create namespace metallb-system
 helm install \
+    metallb \
     stable/metallb \
     --wait \
     --namespace metallb-system \
-    --name metallb \
     --version $config_metallb_helm_chart_version \
     --values <(cat <<EOF
 configInline:

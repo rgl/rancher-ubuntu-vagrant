@@ -2,7 +2,7 @@
 set -eux
 
 # NB execute apt-cache madison docker-ce to known the available versions.
-docker_version="${1:-5:19.03.4~3-0~ubuntu-bionic}"; shift || true
+docker_version="${1:-5:19.03.5~3-0~ubuntu-bionic}"; shift || true
 registry_proxy_domain="${1:-}"; shift || true
 registry_proxy_host="$registry_proxy_domain:5001"
 registry_proxy_url="https://$registry_proxy_host"

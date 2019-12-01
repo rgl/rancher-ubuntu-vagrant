@@ -32,7 +32,8 @@ config_kubectl_version = '1.16.3-00' # NB execute apt-cache madison kubectl to k
 config_krew_version = 'v0.3.2' # NB see https://github.com/kubernetes-sigs/krew/releases
 config_helm_version = 'v3.0.0' # see https://github.com/helm/helm/releases/latest
 config_metallb_helm_chart_version = '0.12.0' # see https://github.com/helm/charts/blob/master/stable/metallb/Chart.yaml
-config_metallb_ip_addresses = '10.1.0.30-10.1.0.40' # MetalLB will allocate IP addresses from this range.
+config_metallb_server_ip_addresses = '10.1.0.30-10.1.0.39' # MetalLB will allocate IP addresses from this range.
+config_metallb_master_ip_addresses = '10.1.0.40-10.1.0.49' # MetalLB will allocate IP addresses from this range.
 config_nfs_client_provisioner_version = '1.2.8' # version of https://github.com/helm/charts/blob/master/stable/nfs-client-provisioner/Chart.yaml
 
 hosts = """
@@ -111,7 +112,7 @@ Vagrant.configure(2) do |config|
       ]
       config.vm.provision 'shell', path: 'provision-helm.sh', args: [config_helm_version]
       if i == 0
-        config.vm.provision 'shell', path: 'provision-metallb.sh', args: [config_metallb_helm_chart_version, config_metallb_ip_addresses]
+        config.vm.provision 'shell', path: 'provision-metallb.sh', args: [config_metallb_helm_chart_version, config_metallb_server_ip_addresses]
         config.vm.provision 'shell', path: 'provision-external-dns-pdns.sh', args: [config_pandora_fqdn, config_server_fqdn]
         config.vm.provision 'shell', path: 'provision-nfs-client.sh', args: [
           config_pandora_fqdn,
@@ -159,7 +160,9 @@ Vagrant.configure(2) do |config|
         config_kubectl_version,
         config_krew_version,
       ]
+      config.vm.provision 'shell', path: 'provision-helm.sh', args: [config_helm_version]
       if i == 0
+        config.vm.provision 'shell', path: 'provision-metallb.sh', args: [config_metallb_helm_chart_version, config_metallb_master_ip_addresses]
         config.vm.provision 'shell', path: 'provision-rancher-cli.sh', args: [
           config_server_fqdn,
           config_rancher_cli_version,

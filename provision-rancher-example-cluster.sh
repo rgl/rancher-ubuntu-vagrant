@@ -39,7 +39,7 @@ cluster_response="$(wget -qO- \
     --header "Authorization: Bearer $admin_api_token" \
     --post-data '{
         "type": "cluster",
-        "name": "example",
+        "name": "'$cluster_name'",
         "description": "hello world",
         "dockerRootDir": "/var/lib/docker",
         "enableNetworkPolicy": false,

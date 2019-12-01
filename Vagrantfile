@@ -122,8 +122,12 @@ Vagrant.configure(2) do |config|
           config_server_fqdn,
           config_admin_password,
           config_rancher_helm_chart_version,
-          config_rancher_cli_version,
           config_k8s_version,
+        ]
+        config.vm.provision 'shell', path: 'provision-rancher-cli.sh', args: [
+          config_server_fqdn,
+          config_rancher_cli_version,
+          'local',
         ]
         config.vm.provision 'shell', path: 'provision-rancher-example-cluster.sh', args: [
           config_pandora_fqdn,
@@ -155,6 +159,13 @@ Vagrant.configure(2) do |config|
         config_kubectl_version,
         config_krew_version,
       ]
+      if i == 0
+        config.vm.provision 'shell', path: 'provision-rancher-cli.sh', args: [
+          config_server_fqdn,
+          config_rancher_cli_version,
+          'example',
+        ]
+      end
     end
   end
 

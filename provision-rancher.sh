@@ -6,7 +6,6 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 admin_password="${1:-admin}"; shift || true
 rancher_helm_chart_version="${1:-2.3.3}"; shift || true
-rancher_cli_version="${1:-v2.3.2}"; shift || true
 k8s_version="${1:-v1.16.3-rancher1-1}"; shift || true
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 registry_host="$registry_domain:5000"
@@ -144,16 +143,3 @@ while true; do
     [ "$cluster_state" = 'active' ] && break
     sleep .5
 done
-
-# install the rancher cli.
-echo "installing rancher cli..."
-wget -qO- "https://github.com/rancher/cli/releases/download/$rancher_cli_version/rancher-linux-amd64-$rancher_cli_version.tar.xz" \
-    | tar xJf - --strip-components 2
-mv rancher /usr/local/bin
-
-echo "logging on rancher..."
-rancher login "$rancher_server_url" --token "$admin_api_token" --name 'example'
-
-# move namespaces that aren't in a project to the System project.
-rancher namespaces ls --all-namespaces --format '{{if not .Namespace.ProjectID}}{{.Namespace.ID}}{{end}}' \
-    | xargs -I% bash -c 'echo "moving the % namespace to the System project..."; rancher namespaces move % System'

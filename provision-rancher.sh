@@ -5,8 +5,8 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 admin_password="${1:-admin}"; shift || true
-rancher_helm_chart_version="${1:-2.3.3}"; shift || true
-k8s_version="${1:-v1.16.3-rancher1-1}"; shift || true
+rancher_helm_chart_version="${1:-2.3.4}"; shift || true
+k8s_version="${1:-v1.17.0-rancher1-2}"; shift || true
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -29,28 +29,12 @@ kubectl ingress-nginx lint --show-all --all-namespaces
 kubectl ingress-nginx ingresses --all-namespaces
 EOF
 
-# launch rancher.
-# see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/
-# see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/chart-options/
-# see https://github.com/rancher/rancher/tree/master/chart
-# see https://releases.rancher.com/server-charts/latest/index.yaml
-echo "installing rancher..."
-helm repo add rancher https://releases.rancher.com/server-charts/latest
-helm search repo rancher/ --versions | head -10
+# create the rancher cattle-system namespace.
 kubectl create namespace cattle-system
-helm install \
-    rancher \
-    rancher/rancher \
-    --namespace cattle-system \
-    --version $rancher_helm_chart_version \
-    --set "hostname=$rancher_server_domain" \
-    --set ingress.tls.source=secret \
-    --set privateCA=true \
-    --set replicas=1
 
-# set the rancher custom certificates.
+# create the rancher certificate secrets.
 # see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/tls-secrets/
-echo "create the rancher certificates secrets..."
+echo "create the rancher certificate secrets..."
 kubectl \
     create secret tls tls-rancher-ingress \
     --namespace cattle-system \
@@ -60,6 +44,24 @@ kubectl \
     create secret generic tls-ca \
     --namespace cattle-system \
     --from-file=cacerts.pem=/vagrant/shared/tls/example-ca/example-ca-crt.pem
+
+# launch rancher.
+# see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/
+# see https://rancher.com/docs/rancher/v2.x/en/installation/ha/helm-rancher/chart-options/
+# see https://github.com/rancher/rancher/tree/master/chart
+# see https://releases.rancher.com/server-charts/latest/index.yaml
+echo "installing rancher..."
+helm repo add rancher https://releases.rancher.com/server-charts/latest
+helm search repo rancher/ --versions | head -10
+helm install \
+    rancher \
+    rancher/rancher \
+    --namespace cattle-system \
+    --version $rancher_helm_chart_version \
+    --set "hostname=$rancher_server_domain" \
+    --set ingress.tls.source=secret \
+    --set privateCA=true \
+    --set replicas=1
 
 # wait for it to be rolled out.
 echo "waiting for rancher to be rolled out..."

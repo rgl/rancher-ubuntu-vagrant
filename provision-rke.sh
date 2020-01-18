@@ -5,10 +5,10 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rke_roles="${1:-controlplane,etcd,worker}"; shift || true
 rke_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.1.0.3}"; shift || true
-rke_version="${1:-v1.0.0}"; shift || true
-k8s_version="${1:-v1.16.3-rancher1-1}"; shift || true
-kubectl_version="${1:-1.16.3-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
-krew_version="${1:-v0.3.2}"; shift # NB see https://github.com/kubernetes-sigs/krew
+rke_version="${1:-v1.0.2}"; shift || true
+k8s_version="${1:-v1.17.0-rancher1-2}"; shift || true
+kubectl_version="${1:-1.17.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+krew_version="${1:-v0.3.3}"; shift # NB see https://github.com/kubernetes-sigs/krew
 pod_network_cidr='10.52.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.53.0.0/16'   # default is 10.43.0.0/16.
 service_node_port_range='30000-32767' # default is 30000-32767
@@ -73,6 +73,7 @@ rke config --system-images --version $k8s_version # list the system images.
 
 # create the rke configuration.
 if [[ "$rke_roles" == *'controlplane'* ]] && [[ "$rke_index" == '0' ]]; then
+# NB use rke config --empty --print to show all the options that can be set in the cluster.yaml file.
 # NB always leave the "nodes:" line at the end of cluster.yaml because we will append nodes to it later.
 # see https://rancher.com/docs/rke/latest/en/example-yamls/
 # see https://rancher.com/docs/rke/latest/en/config-options/add-ons/network-plugins/#network-plug-in-options
@@ -145,7 +146,13 @@ $(
 EOF
 
 # bring up the cluster.
-rke up --config cluster.yaml
+# NB the while loop is to workaround the transient error that happens sometimes:
+#     server1: time="2020-01-18T16:58:17Z" level=info msg="[addons] Executing deploy job rke-network-plugin"
+#     server1: time="2020-01-18T16:58:47Z" level=fatal msg="Failed to get job complete status for job rke-network-plugin-deploy-job in namespace kube-system"
+while ! rke up --config cluster.yaml; do
+  printf '#\n# rke up failed... retrying in a bit.\n#\n'
+  sleep 15
+done
 
 # save kubeconfig.
 echo "saving ~/.kube/config..."

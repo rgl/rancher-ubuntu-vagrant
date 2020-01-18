@@ -4,7 +4,7 @@ set -eu
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
-registry_image='registry:2.7.1'
+registry_image='registry:2.7.1' # see https://hub.docker.com/_/registry
 registry_username='vagrant'
 registry_password='vagrant'
 

@@ -96,7 +96,7 @@ Vagrant.configure(2) do |config|
     config.vm.define name do |config|
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
-      config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
+      config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn, config_pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version, config_pandora_fqdn]
@@ -148,7 +148,7 @@ Vagrant.configure(2) do |config|
     config.vm.define name do |config|
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
-      config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
+      config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn, config_pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version, config_pandora_fqdn]
@@ -189,7 +189,7 @@ Vagrant.configure(2) do |config|
       end
       config.vm.hostname = fqdn
       config.vm.network :private_network, ip: ip_address, libvirt__forward_mode: 'route', libvirt__dhcp_enabled: false
-      config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn]
+      config.vm.provision 'shell', path: 'provision-base.sh', args: [config_pandora_fqdn, config_pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-certificate.sh', args: [config_server_fqdn]
       config.vm.provision 'shell', path: 'provision-dns-client.sh', args: [config_pandora_ip_address]
       config.vm.provision 'shell', path: 'provision-docker.sh', args: [config_docker_version, config_pandora_fqdn]

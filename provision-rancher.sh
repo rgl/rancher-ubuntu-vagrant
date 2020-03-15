@@ -5,8 +5,8 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 admin_password="${1:-admin}"; shift || true
-rancher_helm_chart_version="${1:-2.3.4}"; shift || true
-k8s_version="${1:-v1.17.0-rancher1-2}"; shift || true
+rancher_helm_chart_version="${1:-2.3.5}"; shift || true
+k8s_version="${1:-v1.17.2-rancher1-2}"; shift || true
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -107,6 +107,10 @@ chmod 600 ~/.rancher-admin-api-token
 echo -n "$admin_api_token" >/vagrant/shared/cluster-admin-api-token
 
 # set the server-url.
+# NB sometimes it seems the cluster is stuck waiting for the server-url setting,
+#    the workaround is to login into rancher, edit the cluster, and just click
+#    the save button.
+#    see https://github.com/rancher/rancher/issues/16213
 echo "setting the rancher server-url setting..."
 wget -qO- \
     --method PUT \

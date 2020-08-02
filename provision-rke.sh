@@ -5,9 +5,9 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rke_roles="${1:-controlplane,etcd,worker}"; shift || true
 rke_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.1.0.3}"; shift || true
-rke_version="${1:-v1.0.4}"; shift || true
-k8s_version="${1:-v1.17.2-rancher1-2}"; shift || true
-kubectl_version="${1:-1.17.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+rke_version="${1:-v1.1.4}"; shift || true
+k8s_version="${1:-v1.18.6-rancher1-1}"; shift || true
+kubectl_version="${1:-1.18.6-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.3.4}"; shift # NB see https://github.com/kubernetes-sigs/krew
 pod_network_cidr='10.52.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.53.0.0/16'   # default is 10.43.0.0/16.
@@ -47,9 +47,9 @@ function helm {
 cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
 docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf
-kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -it --rm test cat /etc/resolv.conf
-kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/resolv.conf
-kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) cat /etc/nginx/nginx.conf | grep resolver
+kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -it --rm test -- cat /etc/resolv.conf
+kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) -- cat /etc/resolv.conf
+kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) -- cat /etc/nginx/nginx.conf | grep resolver
 kubectl --namespace ingress-nginx get pods
 kubectl ingress-nginx lint --show-all --all-namespaces
 kubectl ingress-nginx ingresses --all-namespaces
@@ -122,15 +122,15 @@ fi
 #       Annotations:        flannel.alpha.coreos.com/backend-data: null
 #                           flannel.alpha.coreos.com/backend-type: host-gw
 #                           flannel.alpha.coreos.com/kube-subnet-manager: true
-#                           flannel.alpha.coreos.com/public-ip: 10.1.0.3
+#                           flannel.alpha.coreos.com/public-ip: 10.1.0.5
 #                           node.alpha.kubernetes.io/ttl: 0
 #                           rke.cattle.io/external-ip: server1.rancher.test
-#                           rke.cattle.io/internal-ip: 10.1.0.3
+#                           rke.cattle.io/internal-ip: 10.1.0.5
 #                           volumes.kubernetes.io/controller-managed-attach-detach: true
 # NB kubectl get node $(hostname) -o wide must return $node_ip_address as INTERNAL-IP.
 #    in the end kubectl get nodes -o wide must report something like:
-#       NAME   STATUS   ROLES                      AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION      CONTAINER-RUNTIME
-#       server1   Ready    controlplane,etcd,worker   19m   v1.15.4   10.1.0.3      <none>        Ubuntu 18.04.3 LTS   4.15.0-62-generic   docker://19.3.2
+#       NAME      STATUS   ROLES                      AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
+#       server1   Ready    controlplane,etcd,worker   19m   v1.18.6   10.1.0.5      <none>        Ubuntu 20.04.1 LTS   5.4.0-42-generic   docker://19.3.12
 #    also do a ps -wwxo pid,cmd | grep kubelet and ensure the value of the --node-ip argument is correct.
 cat >>cluster.yaml <<EOF
   - hostname_override: $(hostname)
@@ -175,7 +175,7 @@ apt-get install -y "kubectl=$kubectl_version"
 kubectl completion bash >/etc/bash_completion.d/kubectl
 
 # wait for this node to be Ready.
-# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.15.4
+# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.18.6
 echo "waiting for this node to be ready..."
 $SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
 

@@ -4,7 +4,7 @@ set -eu
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
-k8s_version="${1:-v1.17.2-rancher1-2}"; shift || true
+k8s_version="${1:-v1.18.6-rancher1-1}"; shift || true
 pod_network_cidr='10.62.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.63.0.0/16'   # default is 10.43.0.0/16.
 service_node_port_range='30000-32767' # default is 30000-32767

@@ -5,8 +5,8 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 admin_password="${1:-admin}"; shift || true
-rancher_helm_chart_version="${1:-2.3.5}"; shift || true
-k8s_version="${1:-v1.17.2-rancher1-2}"; shift || true
+rancher_helm_chart_version="${1:-2.4.5}"; shift || true
+k8s_version="${1:-v1.18.6-rancher1-1}"; shift || true
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -21,9 +21,9 @@ cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
 docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf
 kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -it --rm test cat /etc/resolv.conf
-kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name | xargs -I% kubectl --namespace ingress-nginx exec % cat /etc/resolv.conf
-kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name | xargs -I% kubectl --namespace ingress-nginx exec % cat /etc/nginx/nginx.conf | grep resolver
-kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name | head -1) cat /etc/nginx/nginx.conf | grep resolver
+kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name | xargs -I% kubectl --namespace ingress-nginx exec % -- cat /etc/resolv.conf
+kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name | xargs -I% kubectl --namespace ingress-nginx exec % -- cat /etc/nginx/nginx.conf | grep resolver
+kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name | head -1) -- cat /etc/nginx/nginx.conf | grep resolver
 kubectl --namespace ingress-nginx get pods -o wide
 kubectl ingress-nginx lint --show-all --all-namespaces
 kubectl ingress-nginx ingresses --all-namespaces

@@ -4,7 +4,7 @@ This is a [ha rancher](https://rancher.com/docs/rancher/v2.x/en/installation/ha/
 
 ## Usage
 
-Install the [ubuntu-18.04-amd64](https://github.com/rgl/ubuntu-vagrant) box.
+Install the [ubuntu-20.04-amd64](https://github.com/rgl/ubuntu-vagrant) box.
 
 Launch the environment:
 
@@ -65,7 +65,7 @@ kubectl --namespace ingress-nginx \
 
 To delegate the `rancher.test` zone to the kubernetes managed external dns server (running in pandora) you need to configure your system to delegate that DNS zone to the pandora DNS server, for that, you can configure your system to only use dnsmasq.
 
-For example, on my Ubuntu 18.04 Desktop, I have uninstalled `resolvconf`, disabled `NetworkManager`, and manually configured the network interfaces:
+For example, on my Ubuntu 20.04 Desktop, I have uninstalled `resolvconf`, disabled `NetworkManager`, and manually configured the network interfaces:
 
 ```bash
 sudo su -l

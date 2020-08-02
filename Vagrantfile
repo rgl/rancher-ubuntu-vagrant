@@ -25,7 +25,7 @@ config_server_ip_addresses = generate_ip_addresses('10.1.0.5', config_server_cou
 config_master_ip_addresses = generate_ip_addresses('10.1.0.10', config_master_count)
 config_ubuntu_worker_ip_addresses = generate_ip_addresses('10.1.0.15', config_ubuntu_worker_count)
 config_admin_password = 'admin'
-config_docker_version = '5:19.03.12~3-0~ubuntu-bionic' # NB execute apt-cache madison docker-ce to known the available versions.
+config_docker_version = '5:19.03.12~3-0~ubuntu-focal' # NB execute apt-cache madison docker-ce to known the available versions.
 config_rke_version = 'v1.1.4' # see https://github.com/rancher/rke/releases
 config_k8s_version = 'v1.18.6-rancher1-1' # see https://github.com/rancher/kontainer-driver-metadata/blob/master/rke/k8s_rke_system_images.go of the version that ships with your rke version.
 config_kubectl_version = '1.18.6-00' # NB execute apt-cache madison kubectl to known the available versions.
@@ -51,7 +51,7 @@ ff02::2 ip6-allrouters
 """
 
 Vagrant.configure(2) do |config|
-  config.vm.box = 'ubuntu-18.04-amd64'
+  config.vm.box = 'ubuntu-20.04-amd64'
 
   config.vm.provider 'libvirt' do |lv, config|
     lv.memory = 2*1024

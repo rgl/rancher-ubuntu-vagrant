@@ -11,7 +11,7 @@ set -eu
 #    canal/calico cni is installed (like we do on this environment).
 # see https://metallb.universe.tf/configuration/#layer-2-configuration
 
-config_metallb_helm_chart_version="${1:-0.12.0}"; shift || true
+config_metallb_helm_chart_version="${1:-0.12.1}"; shift || true
 metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
 
 # deploy the metallb helm chart.

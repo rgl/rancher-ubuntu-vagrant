@@ -6,8 +6,8 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 node_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.1.0.10}"; shift || true
-kubectl_version="${1:-1.18.6-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
-krew_version="${1:-v0.3.4}"; shift # NB see https://github.com/kubernetes-sigs/krew
+kubectl_version="${1:-1.18.8-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+krew_version="${1:-v0.4.0}"; shift # NB see https://github.com/kubernetes-sigs/krew
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
 registry_username='vagrant'
@@ -71,6 +71,21 @@ $rancher_agent_registration_command
 
 # wait for the cluster to be active.
 # NB this can only complete after the rancher-agent (with the etcd and controlplane roles) is up.
+# NB if this gets stuck in this step, see the rancher-agent logs with:
+#       rancher_agent_id="$(docker ps --no-trunc --format '{{.ID}} {{.Image}}' | awk ' /rancher\/rancher-agent:/{print $1}')"
+#       docker logs $rancher_agent_id
+#    try troubleshoot from inside the container with:
+#       docker exec -it $rancher_agent_id bash
+#       apt-get update
+#       apt-get install -y iputils-ping dnsutils
+#       cat /etc/resolv.conf
+#       ping 10.1.0.2
+#       ping pandora.rancher.test
+#       ping server.rancher.test
+#    try to restart the container with:
+#       docker kill $rancher_agent_id
+#       sleep 10
+#       docker start $rancher_agent_id
 echo "waiting for cluster $cluster_id to be active..."
 previous_message=""
 while true; do
@@ -135,7 +150,7 @@ kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"'$registr
 fi
 
 # wait for this node to be Ready.
-# e.g. master1   Ready    controlplane,etcd,worker   2m9s   v1.18.6
+# e.g. master1   Ready    controlplane,etcd,worker   2m9s   v1.18.8
 $SHELL -c 'node_name=$(hostname); echo "waiting for node $node_name to be ready..."; while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done; echo "node ready!"'
 
 # install the krew kubectl package manager.

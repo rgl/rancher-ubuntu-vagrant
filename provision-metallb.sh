@@ -11,19 +11,19 @@ set -eu
 #    canal/calico cni is installed (like we do on this environment).
 # see https://metallb.universe.tf/configuration/#layer-2-configuration
 
-config_metallb_helm_chart_version="${1:-0.12.1}"; shift || true
+config_metallb_helm_chart_version="${1:-0.1.24}"; shift || true
 metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
 
 # deploy the metallb helm chart.
 # NB this creates the app inside the current rancher cli project (the one returned by rancher context current).
-# see https://github.com/helm/charts/tree/master/stable/metallb
-# see https://github.com/helm/charts/commits/master/stable/metallb
-# see https://github.com/helm/charts/tree/b0f9cb2d7af822e0031f632f2faa0cbb53167770/stable/metallb
+# see https://github.com/bitnami/charts/tree/master/bitnami/metallb
 echo "deploying the metallb app..."
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm search repo bitnami/metallb --versions | head -10
 kubectl create namespace metallb-system
 helm install \
     metallb \
-    stable/metallb \
+    bitnami/metallb \
     --wait \
     --namespace metallb-system \
     --version $config_metallb_helm_chart_version \

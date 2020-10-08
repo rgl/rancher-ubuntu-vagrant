@@ -3,7 +3,7 @@ set -eu
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 node_ip_address="${1:-10.1.0.15}"; shift || true
-kubectl_version="${1:-1.18.8-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+kubectl_version="${1:-1.19.2-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 registry_host="$registry_domain:5000"
 registry_username='vagrant'
 registry_password='vagrant'
@@ -49,7 +49,7 @@ kubectl completion bash >/etc/bash_completion.d/kubectl
 
 # copy kubectl configuration.
 install -d -m 700 ~/.kube
-cp /vagrant/shared/example-cluster-admin.conf ~/.kube/config
+install -m 600 /vagrant/shared/example-cluster-admin.conf ~/.kube/config
 
 # register this node as an ubuntu worker.
 rancher_node_command="$(cat /vagrant/shared/rancher-ubuntu-registration-node-command.sh)"
@@ -62,7 +62,7 @@ echo "registering this node as a rancher-agent with $rancher_agent_registration_
 $rancher_agent_registration_command
 
 # wait for this node to be Ready.
-# e.g. uworker1   Ready    worker   2m9s   v1.18.8
+# e.g. uworker1   Ready    worker   2m9s   v1.19.2
 $SHELL -c 'node_name=$(hostname); echo "waiting for node $node_name to be ready..."; while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done; echo "node ready!"'
 
 # login into the registry.

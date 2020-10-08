@@ -6,8 +6,8 @@ rke_roles="${1:-controlplane,etcd,worker}"; shift || true
 rke_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.1.0.3}"; shift || true
 rke_version="${1:-v1.2.0}"; shift || true
-k8s_version="${1:-v1.18.8-rancher1-1}"; shift || true
-kubectl_version="${1:-1.18.8-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+k8s_version="${1:-v1.19.2-rancher1-1}"; shift || true
+kubectl_version="${1:-1.19.2-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.4.0}"; shift # NB see https://github.com/kubernetes-sigs/krew
 pod_network_cidr='10.52.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.53.0.0/16'   # default is 10.43.0.0/16.
@@ -130,7 +130,7 @@ fi
 # NB kubectl get node $(hostname) -o wide must return $node_ip_address as INTERNAL-IP.
 #    in the end kubectl get nodes -o wide must report something like:
 #       NAME      STATUS   ROLES                      AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
-#       server1   Ready    controlplane,etcd,worker   19m   v1.18.8   10.1.0.5      <none>        Ubuntu 20.04.1 LTS   5.4.0-48-generic   docker://19.3.13
+#       server1   Ready    controlplane,etcd,worker   19m   v1.19.2   10.1.0.5      <none>        Ubuntu 20.04.1 LTS   5.4.0-48-generic   docker://19.3.13
 #    also do a ps -wwxo pid,cmd | grep kubelet and ensure the value of the --node-ip argument is correct.
 cat >>cluster.yaml <<EOF
   - hostname_override: $(hostname)
@@ -157,7 +157,7 @@ done
 # save kubeconfig.
 echo "saving ~/.kube/config..."
 install -d -m 700 ~/.kube
-cp kube_config_cluster.yaml ~/.kube/config
+install -m 600 kube_config_cluster.yaml ~/.kube/config
 
 # also save the cluster configuration on the host.
 cp cluster.rkestate /vagrant/shared
@@ -175,7 +175,7 @@ apt-get install -y "kubectl=$kubectl_version"
 kubectl completion bash >/etc/bash_completion.d/kubectl
 
 # wait for this node to be Ready.
-# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.18.8
+# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.19.2
 echo "waiting for this node to be ready..."
 $SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
 

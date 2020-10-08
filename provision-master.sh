@@ -6,7 +6,7 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 node_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.1.0.10}"; shift || true
-kubectl_version="${1:-1.18.8-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+kubectl_version="${1:-1.19.2-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.4.0}"; shift # NB see https://github.com/kubernetes-sigs/krew
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -115,6 +115,7 @@ kubeconfig_response="$(
         --header "Authorization: Bearer $admin_api_token" \
         "$rancher_server_url/v3/clusters/$cluster_id?action=generateKubeconfig")"
 install -d -m 700 ~/.kube
+install -m 600 /dev/null ~/.kube/config
 echo "$kubeconfig_response" | jq -r .config >~/.kube/config
 # also save the kubectl configuration on the host, so we can access it there.
 cp ~/.kube/config /vagrant/shared/example-cluster-admin.conf
@@ -150,7 +151,7 @@ kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"'$registr
 fi
 
 # wait for this node to be Ready.
-# e.g. master1   Ready    controlplane,etcd,worker   2m9s   v1.18.8
+# e.g. master1   Ready    controlplane,etcd,worker   2m9s   v1.19.2
 $SHELL -c 'node_name=$(hostname); echo "waiting for node $node_name to be ready..."; while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done; echo "node ready!"'
 
 # install the krew kubectl package manager.

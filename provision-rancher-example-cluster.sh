@@ -4,7 +4,7 @@ set -eu
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
-k8s_version="${1:-v1.19.2-rancher1-1}"; shift || true
+k8s_version="${1:-v1.20.9-rancher1-1}"; shift || true
 pod_network_cidr='10.62.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.63.0.0/16'   # default is 10.43.0.0/16.
 service_node_port_range='30000-32767' # default is 30000-32767
@@ -14,8 +14,8 @@ cluster_name='example'
 admin_api_token="$(cat ~/.rancher-admin-api-token)"
 
 # create the cluster.
-# NB this JSON can be obtained by observing the network when manually creating a cluster from the rancher UI,
-#    and more exactly using the schemas browser at https://server.rancher.test:8443/v3/schemas.
+# NB this JSON can be obtained by observing the network when manually creating a cluster from the rancher UI.
+#    NB also use the schemas browser at https://server.rancher.test:8443/v3/schemas.
 # NB to troubleshoot why the cluster provisioning is failing with something like:
 #       cluster c-fhrlt state: provisioning Failed to get job complete status for job rke-network-plugin-deploy-job in namespace kube-system
 #    execute:
@@ -42,20 +42,33 @@ cluster_response="$(wget -qO- \
         "name": "'$cluster_name'",
         "description": "hello world",
         "dockerRootDir": "/var/lib/docker",
+        "enableClusterAlerting": false,
+        "enableClusterMonitoring": false,
         "enableNetworkPolicy": false,
         "windowsPreferedCluster": false,
         "rancherKubernetesEngineConfig": {
             "type": "rancherKubernetesEngineConfig",
             "kubernetesVersion": "'$k8s_version'",
-            "addonJobTimeout": 30,
+            "addonJobTimeout": 45,
             "ignoreDockerVersion": true,
+            "rotateEncryptionKey": false,
             "sshAgentAuth": false,
             "authentication": {
                 "type": "authnConfig",
                 "strategy": "x509"
             },
+            "dns": {
+                "type": "dnsConfig",
+                "nodelocal": {
+                    "type": "nodelocal",
+                    "ip_address": "",
+                    "node_selector": null,
+                    "update_strategy": {}
+                }
+            },
             "network": {
                 "type": "networkConfig",
+                "mtu": 0,
                 "plugin": "flannel",
                 "options": {
                     "flannel_backend_type": "host-gw",
@@ -64,19 +77,28 @@ cluster_response="$(wget -qO- \
             },
             "ingress": {
                 "type": "ingressConfig",
-                "provider": "nginx"
+                "provider": "nginx",
+                "defaultBackend": false,
+                "httpPort": 0,
+                "httpsPort": 0
             },
             "monitoring": {
                 "type": "monitoringConfig",
-                "provider": "metrics-server"
+                "provider": "metrics-server",
+                "replicas": 1
             },
             "services": {
                 "type": "rkeConfigServices",
                 "kubeApi": {
                     "type": "kubeAPIService",
+                    "alwaysPullImages": false,
                     "podSecurityPolicy": false,
                     "serviceClusterIpRange": "'$service_network_cidr'",
-                    "serviceNodePortRange": "'$service_node_port_range'"
+                    "serviceNodePortRange": "'$service_node_port_range'",
+                    "secretsEncryptionConfig": {
+                        "enabled": false,
+                        "type": "secretsEncryptionConfig"
+                    }
                 },
                 "kubeController": {
                     "type": "kubeControllerService",
@@ -94,21 +116,47 @@ cluster_response="$(wget -qO- \
                         "heartbeat-interval": 500,
                         "election-timeout": 5000
                     },
+                    "gid": 0,
                     "retention": "72h",
                     "snapshot": false,
+                    "uid": 0,
                     "type": "etcdService",
                     "backupConfig": {
+                        "type": "backupConfig",
                         "enabled": true,
                         "intervalHours": 12,
                         "retention": 6,
-                        "type": "backupConfig"
+                        "safeTimestamp": false,
+                        "timeout": 300
                     }
                 }
+            },
+            "upgradeStrategy": {
+                "maxUnavailableControlplane": "1",
+                "maxUnavailableWorker": "10%",
+                "drain": "false",
+                "nodeDrainInput": {
+                    "deleteLocalData": false,
+                    "force": false,
+                    "gracePeriod": -1,
+                    "ignoreDaemonSets": true,
+                    "timeout": 120,
+                    "type": "nodeDrainInput"
+                },
+                "maxUnavailableUnit": "percentage"
             }
         },
         "localClusterAuthEndpoint": {
             "enabled": true,
             "type": "localClusterAuthEndpoint"
+        },
+        "labels": {},
+        "annotations": {},
+        "agentEnvVars": [],
+        "scheduledClusterScan": {
+            "enabled": false,
+            "scheduleConfig": null,
+            "scanConfig": null
         }
     }' \
     "$rancher_server_url/v3/cluster")"

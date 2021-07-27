@@ -33,7 +33,7 @@ echo -n 'http secret' >/opt/registry/secrets/http
 
 # launch the registry.
 # see https://docs.docker.com/registry/deploying/
-echo "starting registry..."
+echo "starting the registry $registry_url..."
 install -d -m 700 /opt/registry/data
 docker run -d \
     --restart=unless-stopped \
@@ -51,7 +51,7 @@ docker run -d \
     "$registry_image"
 
 # wait for the registry to be available.
-echo "waiting for the registry to become available..."
+echo "waiting for the registry $registry_url to become available..."
 while ! wget -q --spider --user "$registry_username" --password "$registry_password" "$registry_url/v2/"; do sleep 1; done;
 
 # login into the registry.

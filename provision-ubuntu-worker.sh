@@ -3,27 +3,10 @@ set -eu
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 node_ip_address="${1:-10.1.0.15}"; shift || true
-kubectl_version="${1:-1.19.2-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 registry_host="$registry_domain:5000"
 registry_username='vagrant'
 registry_password='vagrant'
-
-# wrap commands in a way that their output is correctly (most of the time) displayed on the vagrant up output.
-# see https://github.com/hashicorp/vagrant/issues/11047
-function _wrap_command {
-    local output_path=$(mktemp _wrap_command.XXXXXXXX)
-    "$@" >$output_path
-    local exit_code=$?
-    cat $output_path
-    rm $output_path
-    return $exit_code
-}
-function docker {
-    _wrap_command /usr/bin/docker "$@"
-}
-function kubectl {
-    _wrap_command /usr/bin/kubectl "$@"
-}
 
 # add useful commands to the bash history.
 # see https://kubernetes.github.io/ingress-nginx/kubectl-plugin/
@@ -62,7 +45,7 @@ echo "registering this node as a rancher-agent with $rancher_agent_registration_
 $rancher_agent_registration_command
 
 # wait for this node to be Ready.
-# e.g. uworker1   Ready    worker   2m9s   v1.19.2
+# e.g. uworker1   Ready    worker   2m9s   v1.20.9
 $SHELL -c 'node_name=$(hostname); echo "waiting for node $node_name to be ready..."; while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done; echo "node ready!"'
 
 # login into the registry.

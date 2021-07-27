@@ -4,7 +4,7 @@ set -eu
 #
 # deploy helm.
 
-helm_version="${1:-v3.3.4}"; shift || true
+helm_version="${1:-v3.6.3}"; shift || true
 
 # install helm.
 # see https://helm.sh/docs/intro/install/
@@ -18,8 +18,9 @@ helm completion bash >/usr/share/bash-completion/completions/helm
 
 # add chart repositories.
 # see https://helm.sh/docs/intro/quickstart/
+# see https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
 echo "adding repositories..."
-helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 helm repo update
 
 # kick the tires.

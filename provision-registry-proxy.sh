@@ -19,7 +19,7 @@ echo -n 'http secret' >/opt/registry-proxy/secrets/http
 
 # launch the registry as a docker proxy caching server.
 # see https://docs.docker.com/registry/deploying/
-echo "starting registry..."
+echo "starting the registry $registry_url..."
 install -d -m 700 /opt/registry-proxy/data
 docker run -d \
     --restart=unless-stopped \
@@ -35,7 +35,7 @@ docker run -d \
     "$registry_image"
 
 # wait for the registry to be available.
-echo "waiting for the registry to become available..."
+echo "waiting for the registry $registry_url to become available..."
 while ! wget -q --spider "$registry_url/v2/"; do sleep 1; done;
 
 # dump the registry configuration.

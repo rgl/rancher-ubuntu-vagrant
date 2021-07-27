@@ -42,6 +42,11 @@ kubectl completion bash >/etc/bash_completion.d/kubectl
 # register this node as a rancher-agent.
 rancher_node_command="$(cat /vagrant/shared/rancher-ubuntu-registration-node-command.sh)"
 # TODO try --hostname-override $(hostname) to fix the external-ip address reported by kubectl get nodes -o wide?
+# NB due to the way we are launching the cluster (one node at a time, starting
+#    with master, then the worker) we must create a master with all the roles
+#    because the cluster can only become active after all the roles (etcd,
+#    controlplane and worker) are up.
+#    see https://github.com/rancher/rancher/issues/31244#issuecomment-790274280
 rancher_agent_registration_command="
     $rancher_node_command
         --address $node_ip_address
@@ -53,7 +58,8 @@ echo "registering this node as a rancher-agent with $rancher_agent_registration_
 $rancher_agent_registration_command
 
 # wait for the cluster to be active.
-# NB this can only complete after the rancher-agent (with the etcd and controlplane roles) is up.
+# NB this only completes after all the roles (etcd, controlplane and worker) are up.
+#    see https://github.com/rancher/rancher/issues/31244#issuecomment-790274280
 # NB if this gets stuck in this step, see the rancher-agent logs with:
 #       rancher_agent_id="$(docker ps --no-trunc --format '{{.ID}} {{.Image}}' | awk ' /rancher\/rancher-agent:/{print $1}')"
 #       docker logs $rancher_agent_id

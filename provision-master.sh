@@ -5,7 +5,7 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 node_index="${1:-0}"; shift || true
-node_ip_address="${1:-10.1.0.10}"; shift || true
+node_ip_address="${1:-10.10.0.10}"; shift || true
 kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.4.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
 registry_host="$registry_domain:5000"
@@ -62,7 +62,7 @@ $rancher_agent_registration_command
 #       apt-get update
 #       apt-get install -y iputils-ping dnsutils
 #       cat /etc/resolv.conf
-#       ping 10.1.0.2
+#       ping 10.10.0.2
 #       ping pandora.rancher.test
 #       ping server.rancher.test
 #    try to restart the container with:

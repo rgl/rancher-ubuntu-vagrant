@@ -2,7 +2,7 @@
 set -eu
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
-node_ip_address="${1:-10.1.0.15}"; shift || true
+node_ip_address="${1:-10.10.0.15}"; shift || true
 kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 registry_host="$registry_domain:5000"
 registry_username='vagrant'

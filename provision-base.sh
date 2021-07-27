@@ -2,7 +2,7 @@
 set -eux
 
 pandora_fqdn="${1:-pandora.rancher.test}"; shift || true
-pandora_ip_address="${1:-10.1.0.2}"; shift || true
+pandora_ip_address="${1:-10.10.0.2}"; shift || true
 
 # prevent apt-get et al from asking questions.
 # NB even with this, you'll still get some warnings that you can ignore:

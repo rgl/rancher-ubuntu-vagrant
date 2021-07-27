@@ -2,8 +2,8 @@
 set -eux
 
 server_fqdn="${1:-server.rancher.test}"; shift || true
-server_ip_address="${1:-10.1.0.3}"; shift || true
-ip_addresses="${1:-10.1.0.5,10.1.0.6,10.1.0.7}"; shift || true
+server_ip_address="${1:-10.10.0.3}"; shift || true
+ip_addresses="${1:-10.10.0.5,10.10.0.6,10.10.0.7}"; shift || true
 
 # install and configure haproxy as L4 TCP forwarding load balancer.
 # see https://cbonte.github.io/haproxy-dconv/1.8/configuration.html#4-option%20httpchk

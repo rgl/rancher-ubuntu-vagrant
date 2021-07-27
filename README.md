@@ -15,11 +15,11 @@ vagrant up --no-destroy-on-error --provider=libvirt # or --provider=virtualbox
 Configure your host DNS resolver to delegate the `rancher.test` domain to the `pandora` machine like described in this document. Or add the environment hosts to your machine `hosts` file:
 
 ```plain
-10.1.0.2 pandora.rancher.test
-10.1.0.3 server.rancher.test
-10.1.0.5 server1.rancher.test
-10.1.0.6 server2.rancher.test
-10.1.0.7 server3.rancher.test
+10.10.0.2 pandora.rancher.test
+10.10.0.3 server.rancher.test
+10.10.0.5 server1.rancher.test
+10.10.0.6 server2.rancher.test
+10.10.0.7 server3.rancher.test
 ```
 
 Access the rancher server at https://server.rancher.test and login with the default `admin` username and password.
@@ -48,17 +48,17 @@ kubectl get events --all-namespaces --sort-by=.metadata.creationTimestamp
 Make sure that all of the following commands return the IP address of our `pandora` dns server:
 
 ```bash
-docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.1.0.2
+docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf # => nameserver 10.10.0.2
 kubectl --namespace ingress-nginx \
     exec \
     $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \
     -- \
-    cat /etc/resolv.conf # => nameserver 10.1.0.2
+    cat /etc/resolv.conf # => nameserver 10.10.0.2
 kubectl --namespace ingress-nginx \
     exec \
     $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) \
     -- \
-    cat /etc/nginx/nginx.conf | grep resolver # => resolver 10.1.0.2 valid=30s;
+    cat /etc/nginx/nginx.conf | grep resolver # => resolver 10.10.0.2 valid=30s;
 ```
 
 ## Host DNS resolver
@@ -96,7 +96,7 @@ bind-interfaces
 interface=lo
 listen-address=127.0.0.1
 # delegate the rancher.test zone to the pandora DNS server IP address.
-server=/rancher.test/10.1.0.2
+server=/rancher.test/10.10.0.2
 # delegate to the Cloudflare/APNIC Public DNS IP addresses.
 # NB iif there's no entry in /etc/hosts.
 server=1.1.1.1

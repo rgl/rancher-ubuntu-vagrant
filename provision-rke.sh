@@ -4,7 +4,7 @@ set -eu
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rke_roles="${1:-controlplane,etcd,worker}"; shift || true
 rke_index="${1:-0}"; shift || true
-node_ip_address="${1:-10.1.0.3}"; shift || true
+node_ip_address="${1:-10.10.0.3}"; shift || true
 rke_version="${1:-v1.2.10}"; shift || true
 k8s_version="${1:-v1.20.9-rancher1-1}"; shift || true
 kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
@@ -102,15 +102,15 @@ fi
 #       Annotations:        flannel.alpha.coreos.com/backend-data: null
 #                           flannel.alpha.coreos.com/backend-type: host-gw
 #                           flannel.alpha.coreos.com/kube-subnet-manager: true
-#                           flannel.alpha.coreos.com/public-ip: 10.1.0.5
+#                           flannel.alpha.coreos.com/public-ip: 10.10.0.5
 #                           node.alpha.kubernetes.io/ttl: 0
 #                           rke.cattle.io/external-ip: server1.rancher.test
-#                           rke.cattle.io/internal-ip: 10.1.0.5
+#                           rke.cattle.io/internal-ip: 10.10.0.5
 #                           volumes.kubernetes.io/controller-managed-attach-detach: true
 # NB kubectl get node $(hostname) -o wide must return $node_ip_address as INTERNAL-IP.
 #    in the end kubectl get nodes -o wide must report something like:
 #       NAME      STATUS   ROLES                      AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
-#       server1   Ready    controlplane,etcd,worker   19m   v1.20.9   10.1.0.5      <none>        Ubuntu 20.04.2 LTS   5.4.0-77-generic   docker://20.10.7
+#       server1   Ready    controlplane,etcd,worker   19m   v1.20.9   10.10.0.5      <none>        Ubuntu 20.04.2 LTS   5.4.0-77-generic   docker://20.10.7
 #    also do a ps -wwxo pid,cmd | grep kubelet and ensure the value of the --node-ip argument is correct.
 cat >>cluster.yaml <<EOF
   - hostname_override: $(hostname)

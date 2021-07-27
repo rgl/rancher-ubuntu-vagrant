@@ -12,7 +12,7 @@ set -euo pipefail
 # see https://metallb.universe.tf/configuration/#layer-2-configuration
 
 config_metallb_helm_chart_version="${1:-2.5.0}"; shift || true
-metallb_ip_addresses="${1:-10.1.0.10-10.1.0.20}"; shift || true
+metallb_ip_addresses="${1:-10.10.0.10-10.10.0.20}"; shift || true
 
 # deploy the metallb helm chart.
 # NB this creates the app inside the current rancher cli project (the one returned by rancher context current).

@@ -2,6 +2,8 @@
 
 This is a [ha rancher](https://rancher.com/docs/rancher/v2.x/en/installation/ha/) environment.
 
+For a non-ha environment see the [rgl/rancher-single-node-ubuntu-vagrant](https://github.com/rgl/rancher-single-node-ubuntu-vagrant) repository.
+
 ## Usage
 
 Install the [ubuntu-20.04-amd64](https://github.com/rgl/ubuntu-vagrant) box.

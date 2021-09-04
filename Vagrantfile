@@ -34,7 +34,7 @@ config_helm_version = 'v3.6.3' # see https://github.com/helm/helm/releases
 config_metallb_helm_chart_version = '2.5.4' # see https://github.com/bitnami/charts/blob/master/bitnami/metallb/Chart.yaml
 config_metallb_server_ip_addresses = '10.10.0.30-10.10.0.39' # MetalLB will allocate IP addresses from this range.
 config_metallb_master_ip_addresses = '10.10.0.40-10.10.0.49' # MetalLB will allocate IP addresses from this range.
-config_nfs_client_provisioner_version = '4.0.12' # version of https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/blob/master/charts/nfs-subdir-external-provisioner/Chart.yaml
+config_nfs_client_provisioner_version = '4.0.13' # version of https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/blob/master/charts/nfs-subdir-external-provisioner/Chart.yaml
 
 hosts = """
 127.0.0.1	localhost

@@ -48,6 +48,7 @@ listen stats
   bind $server_ip_address:9000
   mode http
   stats enable
+  stats admin if TRUE
   stats uri /
 
 listen rancher

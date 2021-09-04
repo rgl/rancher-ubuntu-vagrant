@@ -2,7 +2,7 @@
 source /vagrant/lib.sh
 
 # NB execute apt-cache madison docker-ce to known the available versions.
-docker_version="${1:-20.10.7}"; shift || true
+docker_version="${1:-20.10.8}"; shift || true
 registry_proxy_domain="${1:-}"; shift || true
 registry_proxy_host="$registry_proxy_domain:5001"
 registry_proxy_url="https://$registry_proxy_host"

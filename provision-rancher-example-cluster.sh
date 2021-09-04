@@ -4,7 +4,7 @@ source /vagrant/lib.sh
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
-k8s_version="${1:-v1.20.9-rancher1-1}"; shift || true
+k8s_version="${1:-v1.21.4-rancher1-1}"; shift || true
 pod_network_cidr='10.62.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.63.0.0/16'   # default is 10.43.0.0/16.
 service_node_port_range='30000-32767' # default is 30000-32767
@@ -50,6 +50,7 @@ cluster_response="$(wget -qO- \
             "type": "rancherKubernetesEngineConfig",
             "kubernetesVersion": "'$k8s_version'",
             "addonJobTimeout": 45,
+            "enableCriDockerd": false,
             "ignoreDockerVersion": true,
             "rotateEncryptionKey": false,
             "sshAgentAuth": false,
@@ -160,16 +161,25 @@ cluster_response="$(wget -qO- \
         }
     }' \
     "$rancher_server_url/v3/cluster")"
-cluster_id="$(echo "$cluster_response" | jq -r .id)"
+cluster_id="$(jq -r .id <<<"$cluster_response")"
 echo "$cluster_id" >/vagrant/shared/example-cluster-id
 
 # save the registration node commands.
 echo "getting the rancher-agent registration command..."
+while true; do
+    cluster_registration_token_response="$(
+        wget -qO- \
+            --header 'Content-Type: application/json' \
+            --header "Authorization: Bearer $admin_api_token" \
+            --post-data '{"type":"clusterRegistrationToken","clusterId":"'$cluster_id'"}' \
+            "$rancher_server_url/v3/clusterregistrationtoken" || true)"
+    [ -n "$cluster_registration_token_response" ] && break || sleep 5
+done
+cluster_registration_token_url="$(jq -r .links.self <<<"$cluster_registration_token_response")"
 cluster_registration_response="$(
     wget -qO- \
         --header 'Content-Type: application/json' \
         --header "Authorization: Bearer $admin_api_token" \
-        --post-data '{"type":"clusterRegistrationToken","clusterId":"'$cluster_id'"}' \
-        "$rancher_server_url/v3/clusterregistrationtoken")"
-rancher_node_command="$(echo "$cluster_registration_response" | jq -r .nodeCommand)"
+        "$cluster_registration_token_url")"
+rancher_node_command="$(jq -r .nodeCommand <<<"$cluster_registration_response")"
 echo "$rancher_node_command" >/vagrant/shared/rancher-ubuntu-registration-node-command.sh

@@ -5,10 +5,10 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rke_roles="${1:-controlplane,etcd,worker}"; shift || true
 rke_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.10.0.3}"; shift || true
-rke_version="${1:-v1.2.10}"; shift || true
-k8s_version="${1:-v1.20.9-rancher1-1}"; shift || true
-kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
-krew_version="${1:-v0.4.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
+rke_version="${1:-v1.3.0}"; shift || true
+k8s_version="${1:-v1.21.4-rancher1-1}"; shift || true
+kubectl_version="${1:-1.21.4}"; shift || true
+krew_version="${1:-v0.4.1}"; shift || true # NB see https://github.com/kubernetes-sigs/krew
 pod_network_cidr='10.52.0.0/16'       # default is 10.42.0.0/16.
 service_network_cidr='10.53.0.0/16'   # default is 10.43.0.0/16.
 service_node_port_range='30000-32767' # default is 30000-32767
@@ -110,7 +110,7 @@ fi
 # NB kubectl get node $(hostname) -o wide must return $node_ip_address as INTERNAL-IP.
 #    in the end kubectl get nodes -o wide must report something like:
 #       NAME      STATUS   ROLES                      AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION     CONTAINER-RUNTIME
-#       server1   Ready    controlplane,etcd,worker   19m   v1.20.9   10.10.0.5      <none>        Ubuntu 20.04.2 LTS   5.4.0-77-generic   docker://20.10.7
+#       server1   Ready    controlplane,etcd,worker   19m   v1.21.4   10.10.0.5      <none>        Ubuntu 20.04.2 LTS   5.4.0-77-generic   docker://20.10.8
 #    also do a ps -wwxo pid,cmd | grep kubelet and ensure the value of the --node-ip argument is correct.
 cat >>cluster.yaml <<EOF
   - hostname_override: $(hostname)
@@ -145,17 +145,19 @@ cp cluster.yaml /vagrant/shared
 cp ~/.kube/config /vagrant/shared/admin.conf
 
 # install kubectl.
+# see https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 echo "installing kubectl $kubectl_version..."
-wget -qO- https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list
+wget -qO /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo 'deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main' >/etc/apt/sources.list.d/kubernetes.list
 apt-get update
-apt-get install -y "kubectl=$kubectl_version"
+kubectl_package_version="$(apt-cache madison kubectl | awk "/$kubectl_version-/{print \$3}")"
+apt-get install -y "kubectl=$kubectl_package_version"
 
 # install the bash completion script.
 kubectl completion bash >/etc/bash_completion.d/kubectl
 
 # wait for this node to be Ready.
-# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.20.9
+# e.g. server1   Ready    controlplane,etcd,worker   22m   v1.21.4
 echo "waiting for this node to be ready..."
 $SHELL -c 'node_name=$(hostname); while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done'
 

@@ -6,7 +6,7 @@ rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 node_index="${1:-0}"; shift || true
 node_ip_address="${1:-10.10.0.10}"; shift || true
-kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+kubectl_version="${1:-1.21.4}"; shift # NB execute apt-cache madison kubectl to known the available versions.
 krew_version="${1:-v0.4.1}"; shift # NB see https://github.com/kubernetes-sigs/krew
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -20,21 +20,21 @@ cluster_id="$(cat /vagrant/shared/example-cluster-id)"
 # see https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/
 cat >~/.bash_history <<'EOF'
 cat /etc/resolv.conf
-docker run -it --rm --name test debian:buster-slim cat /etc/resolv.conf
-kubectl run --generator=run-pod/v1 --restart=Never --image=debian:buster-slim -it --rm test -- cat /etc/resolv.conf
+kubectl run --restart=Never --image=debian:bullseye-slim -i --rm test -- cat /etc/resolv.conf
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) -- cat /etc/resolv.conf
 kubectl --namespace ingress-nginx exec $(kubectl --namespace ingress-nginx get pods -l app=ingress-nginx -o name) -- cat /etc/nginx/nginx.conf | grep resolver
 kubectl --namespace ingress-nginx get pods
+kubectl ingress-nginx --namespace ingress-nginx conf -l app=ingress-nginx
 kubectl ingress-nginx lint --show-all --all-namespaces
 kubectl ingress-nginx ingresses --all-namespaces
 EOF
 
-# install kubectl.
-echo "installing kubectl $kubectl_version..."
-wget -qO- https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list
+# see https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
+wget -qO /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo 'deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main' >/etc/apt/sources.list.d/kubernetes.list
 apt-get update
-apt-get install -y "kubectl=$kubectl_version"
+kubectl_package_version="$(apt-cache madison kubectl | awk "/$kubectl_version-/{print \$3}")"
+apt-get install -y "kubectl=$kubectl_package_version"
 
 # install the bash completion script.
 kubectl completion bash >/etc/bash_completion.d/kubectl
@@ -140,7 +140,7 @@ kubectl patch serviceaccount default -p '{"imagePullSecrets":[{"name":"'$registr
 fi
 
 # wait for this node to be Ready.
-# e.g. master1   Ready    controlplane,etcd,worker   2m9s   v1.20.9
+# e.g. master1   Ready    controlplane,etcd,worker   2m9s   v1.21.4
 $SHELL -c 'node_name=$(hostname); echo "waiting for node $node_name to be ready..."; while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done; echo "node ready!"'
 
 # install the krew kubectl package manager.

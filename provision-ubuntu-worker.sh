@@ -3,7 +3,7 @@ source /vagrant/lib.sh
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 node_ip_address="${1:-10.10.0.15}"; shift || true
-kubectl_version="${1:-1.20.0-00}"; shift # NB execute apt-cache madison kubectl to known the available versions.
+kubectl_version="${1:-1.21.4}"; shift || true # NB execute apt-cache madison kubectl to known the available versions.
 registry_host="$registry_domain:5000"
 registry_username='vagrant'
 registry_password='vagrant'
@@ -21,11 +21,13 @@ kubectl --namespace ingress-nginx get pods
 EOF
 
 # install kubectl.
+# see https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
 echo "installing kubectl $kubectl_version..."
-wget -qO- https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" >/etc/apt/sources.list.d/kubernetes.list
+wget -qO /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo 'deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main' >/etc/apt/sources.list.d/kubernetes.list
 apt-get update
-apt-get install -y "kubectl=$kubectl_version"
+kubectl_package_version="$(apt-cache madison kubectl | awk "/$kubectl_version-/{print \$3}")"
+apt-get install -y "kubectl=$kubectl_package_version"
 
 # install the bash completion script.
 kubectl completion bash >/etc/bash_completion.d/kubectl
@@ -45,7 +47,7 @@ echo "registering this node as a rancher-agent with $rancher_agent_registration_
 $rancher_agent_registration_command
 
 # wait for this node to be Ready.
-# e.g. uworker1   Ready    worker   2m9s   v1.20.9
+# e.g. uworker1   Ready    worker   2m9s   v1.21.4
 $SHELL -c 'node_name=$(hostname); echo "waiting for node $node_name to be ready..."; while [ -z "$(kubectl get nodes $node_name 2>/dev/null | grep -E "$node_name\s+Ready\s+")" ]; do sleep 3; done; echo "node ready!"'
 
 # login into the registry.

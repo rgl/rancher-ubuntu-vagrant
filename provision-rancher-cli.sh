@@ -3,7 +3,7 @@ source /vagrant/lib.sh
 
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
-rancher_cli_version="${1:-v2.4.11}"; shift || true
+rancher_cli_version="${1:-v2.4.12}"; shift || true
 cluster_name="${1:-local}"; shift || true
 admin_api_token="$(cat /vagrant/shared/cluster-admin-api-token)"
 

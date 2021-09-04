@@ -5,8 +5,8 @@ registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"
 admin_password="${1:-admin}"; shift || true
-rancher_helm_chart_version="${1:-2.5.9}"; shift || true
-k8s_version="${1:-v1.20.9-rancher1-1}"; shift || true
+rancher_helm_chart_version="${1:-2.6.0}"; shift || true
+k8s_version="${1:-v1.21.4-rancher1-1}"; shift || true
 rancher_domain="$(echo -n "$registry_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"
 registry_host="$registry_domain:5000"
 registry_url="https://$registry_host"
@@ -72,13 +72,16 @@ echo "waiting for rancher to be ready..."
 while [ "$(wget -qO- $rancher_server_url/ping)" != "pong" ]; do sleep 5; done;
 echo "rancher is ready!"
 
+# get the bootstrap password.
+bootstrap_password="$(kubectl get secret --namespace cattle-system bootstrap-secret -o go-template='{{.data.bootstrapPassword|base64decode}}{{ "\n" }}')"
+
 # get the admin login token.
 echo "getting the admin login token..."
 while true; do
     admin_login_token="$(
         wget -qO- \
             --header 'Content-Type: application/json' \
-            --post-data '{"username":"admin","password":"admin"}' \
+            --post-data '{"username":"admin","password":"'$bootstrap_password'"}' \
             "$rancher_server_url/v3-public/localProviders/local?action=login" \
         | jq -r .token)"
     [ "$admin_login_token" != 'null' ] && [ "$admin_login_token" != '' ] && break
@@ -90,7 +93,7 @@ echo "setting the admin password..."
 wget -qO- \
     --header 'Content-Type: application/json' \
     --header "Authorization: Bearer $admin_login_token" \
-    --post-data '{"currentPassword":"admin","newPassword":"'$admin_password'"}' \
+    --post-data '{"currentPassword":"'$bootstrap_password'","newPassword":"'$admin_password'"}' \
     "$rancher_server_url/v3/users?action=changepassword"
 
 # create the api token.

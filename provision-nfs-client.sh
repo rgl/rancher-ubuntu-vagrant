@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 nfs_server="${1:-pandora.rancher.test}"; shift || true
 nfs_path='/var/nfs'

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 #
 # deploy helm.

@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 rancher_server_domain="${1:-server.rancher.test}"; shift || true
 rancher_server_url="https://$rancher_server_domain"

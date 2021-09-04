@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 server_fqdn="${1:-server.rancher.test}"; shift || true
 server_ip_address="${1:-10.10.0.3}"; shift || true

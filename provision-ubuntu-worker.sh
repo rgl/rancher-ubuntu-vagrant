@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 node_ip_address="${1:-10.10.0.15}"; shift || true

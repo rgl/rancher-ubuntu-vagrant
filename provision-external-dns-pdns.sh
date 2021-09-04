@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 pdns_domain="${1:-pandora.rancher.test}"; shift || true
 domain="$(echo -n "$pdns_domain" | sed -E 's,^[a-z0-9-]+\.(.+),\1,g')"

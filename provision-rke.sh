@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rke_roles="${1:-controlplane,etcd,worker}"; shift || true

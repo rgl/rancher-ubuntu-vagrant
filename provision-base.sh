@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 pandora_fqdn="${1:-pandora.rancher.test}"; shift || true
 pandora_ip_address="${1:-10.10.0.2}"; shift || true

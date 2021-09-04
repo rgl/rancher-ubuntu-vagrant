@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+source /vagrant/lib.sh
 
 registry_domain="${1:-pandora.rancher.test}"; shift || true
 rancher_server_domain="${1:-server.rancher.test}"; shift || true

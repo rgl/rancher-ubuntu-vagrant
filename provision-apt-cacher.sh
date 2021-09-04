@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+source /vagrant/lib.sh
 
 # provision apt-cacher-ng.
 # see https://www.unix-ag.uni-kl.de/~bloch/acng/

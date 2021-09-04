@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+source /vagrant/lib.sh
 
 #
 # deploy the MetalLB LoadBalancer.

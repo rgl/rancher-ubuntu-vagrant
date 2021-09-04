@@ -11,7 +11,7 @@ source /vagrant/lib.sh
 #    canal/calico cni is installed (like we do on this environment).
 # see https://metallb.universe.tf/configuration/#layer-2-configuration
 
-config_metallb_helm_chart_version="${1:-2.5.0}"; shift || true
+config_metallb_helm_chart_version="${1:-2.5.4}"; shift || true
 metallb_ip_addresses="${1:-10.10.0.10-10.10.0.20}"; shift || true
 
 # deploy the metallb helm chart.
